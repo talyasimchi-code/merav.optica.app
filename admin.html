@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>מירב האופטיקה — ניהול</title>
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+</head>
+<body>
+<h1 class="sr-only">מירב האופטיקה — ממשק ניהול תורים</h1>
+
+<div class="phone-shell">
+  <div class="app-frame" id="app">
+
+    <!-- Login -->
+    <div class="scr active" data-step="login" style="justify-content:center">
+      <img class="logo-img" src="/logo.png" alt="לוגו מירב האופטיקה" style="max-width:150px;margin-bottom:18px">
+      <p style="font-size:14px;font-weight:500;margin:0 0 16px">ממשק ניהול</p>
+      <div class="field">
+        <label class="f">שם משתמש</label>
+        <input type="text" id="login-user" autocomplete="off">
+      </div>
+      <div class="field">
+        <label class="f">סיסמה</label>
+        <div class="pwrow">
+          <input type="text" id="login-pass" autocomplete="off" spellcheck="false" style="-webkit-text-security:disc">
+          <span class="pwtoggle" id="pw-toggle" aria-label="הצג סיסמה"><i class="ti ti-eye" aria-hidden="true"></i></span>
+        </div>
+      </div>
+      <p class="err" id="login-err"></p>
+      <button class="bigbtn primary" id="login-btn" style="margin-top:6px">
+        <i class="ti ti-login-2" aria-hidden="true"></i>התחברות
+      </button>
+    </div>
+
+    <!-- Main dashboard -->
+    <div class="scr" data-step="main">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex:0 0 auto">
+        <i class="ti ti-logout" id="logout-btn" style="font-size:18px;color:var(--text-muted);cursor:pointer" aria-hidden="true"></i>
+        <span style="font-size:13px;font-weight:500;color:var(--brown)">מירב האופטיקה • ניהול</span>
+      </div>
+
+      <div id="panel-pending" class="panelbody">
+        <h3 style="font-size:14px;font-weight:500;margin:0 0 4px">בקשות ממתינות</h3>
+        <p style="font-size:11px;color:var(--text-muted);margin:0 0 12px">כל פעולה פותחת הודעת וואטסאפ מוכנה מראש</p>
+        <div id="pending-list"></div>
+      </div>
+
+      <div id="panel-approved" class="panelbody" style="display:none">
+        <h3 style="font-size:14px;font-weight:500;margin:0 0 4px">תורים מאושרים</h3>
+        <p style="font-size:11px;color:var(--text-muted);margin:0 0 12px">תורים שהתאריך שלהם עבר יוסרו מהרשימה אוטומטית</p>
+        <div id="approved-list"></div>
+      </div>
+
+      <div id="panel-weekly" class="panelbody" style="display:none">
+        <h3 style="font-size:14px;font-weight:500;margin:0 0 4px">יומן שבועי</h3>
+        <p style="font-size:11px;color:var(--text-muted);margin:0 0 10px">קוביות של חצי שעה. תור נועל 45 דקות ולכן ממלא קובייה אחת וחצי מהקובייה השכנה</p>
+        <div class="legend">
+          <span><span class="lg-box" style="background:var(--blue)"></span>מלא</span>
+          <span><span class="lg-box half"></span>חצי מלא</span>
+        </div>
+        <div class="wk-wrap"><div class="wk-grid" id="week-grid"></div></div>
+      </div>
+
+      <div id="panel-calendar" class="panelbody" style="display:none">
+        <h3 style="font-size:14px;font-weight:500;margin:0 0 4px">ניהול יומן וחסימות</h3>
+        <p style="font-size:11px;color:var(--text-muted);margin:0 0 10px">חגים וערבי חג מסונכרנים מלוח השנה העברי</p>
+        <button class="bigbtn secondary" id="sync-holidays-btn" style="margin-bottom:12px">
+          <i class="ti ti-refresh" aria-hidden="true"></i>סנכרון חגים מלוח השנה העברי
+        </button>
+        <p class="err" id="sync-err"></p>
+        <div id="blocked-list" style="margin-bottom:14px"></div>
+        <div class="card">
+          <p style="font-size:12px;font-weight:500;margin:0 0 10px">חסימה ידנית</p>
+          <div class="field"><label class="f">תאריך</label><input type="text" id="block-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')"></div>
+          <div class="field"><label class="f">הערה (לא חובה)</label><input type="text" id="block-note" placeholder="חופשה"></div>
+          <button class="bigbtn secondary" id="block-btn">
+            <i class="ti ti-calendar-x" aria-hidden="true"></i>חסימת תאריך
+          </button>
+        </div>
+      </div>
+
+      <div class="tabbar">
+        <div class="tab sel" data-tab="pending"><i class="ti ti-clock ic" aria-hidden="true"></i>ממתינות</div>
+        <div class="tab" data-tab="approved"><i class="ti ti-calendar-check ic" aria-hidden="true"></i>מאושרים</div>
+        <div class="tab" data-tab="weekly"><i class="ti ti-table ic" aria-hidden="true"></i>שבועי</div>
+        <div class="tab" data-tab="calendar"><i class="ti ti-calendar-cog ic" aria-hidden="true"></i>ניהול</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="/admin-app.js"></script>
+</body>
+</html>

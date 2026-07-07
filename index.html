@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>מירב האופטיקה — תיאום תור</title>
+<link rel="icon" href="/logo.png">
+<link rel="stylesheet" href="/styles.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+</head>
+<body>
+<h1 class="sr-only">מירב האופטיקה — תיאום תור לבדיקת ראייה</h1>
+
+<div class="phone-shell">
+  <div class="app-frame" id="app">
+
+    <div class="dots" id="dots">
+      <span class="dot" data-d="0"></span><span class="dot" data-d="1"></span><span class="dot" data-d="2"></span>
+      <span class="dot" data-d="3"></span><span class="dot" data-d="4"></span><span class="dot" data-d="5"></span>
+      <span class="dot" data-d="6"></span><span class="dot" data-d="7"></span>
+    </div>
+
+    <div class="scr-wrap">
+
+      <!-- Step 0: Landing -->
+      <div class="scr active" data-step="0" style="text-align:center">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 4px">
+          <img class="logo-img" src="/logo.png" alt="לוגו מירב האופטיקה" style="margin-bottom:14px">
+          <button class="bigbtn primary" id="cta-book" style="width:100%">
+            <i class="ti ti-calendar-plus" aria-hidden="true"></i>לתיאום בדיקה
+          </button>
+        </div>
+        <a class="bigbtn secondary" id="cta-whatsapp" href="#" target="_blank" rel="noopener">
+          <i class="ti ti-brand-whatsapp" style="color:var(--blue)" aria-hidden="true"></i>יצירת קשר בוואטסאפ
+        </a>
+      </div>
+
+      <!-- Step 1: Existing or new customer? -->
+      <div class="scr" data-step="1">
+        <p class="qhead">האם את/ה לקוח/ה קיים/ה של החנות?</p>
+        <button class="opt" data-set="ctype:existing">כן, אני לקוח/ה קיים/ה</button>
+        <button class="opt" data-set="ctype:new">לא, אני לקוח/ה חדש/ה</button>
+      </div>
+
+      <!-- Step 2: Details -->
+      <div class="scr" data-step="2">
+        <div id="existing-block">
+          <p class="qhead">הזנת פרטים לאיתור במערכת</p>
+          <div class="field">
+            <label class="f">שם מלא</label>
+            <input type="text" id="name1" placeholder="לדוגמה: דנה כהן">
+          </div>
+          <div class="field">
+            <label class="f">מספר טלפון</label>
+            <input type="text" id="phone1" placeholder="050-1234567" inputmode="numeric">
+            <p class="hint" id="phone1-hint">מספר הטלפון צריך לכלול 10 ספרות</p>
+          </div>
+          <div id="notfound-box" class="notfound-box" style="display:none">
+            <p style="margin:0 0 10px">מתקשים לאתר אותך במערכת. נסה/י שנית, או המשך/כי בבקשה כלקוח/ה חדש/ה</p>
+            <div style="display:flex;gap:8px">
+              <button class="nav-row-btn" id="retry-lookup-btn" style="flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:12px">נסה שנית</button>
+              <button class="nav-row-btn" id="switch-to-new-btn" style="flex:1;padding:9px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer;font-size:12px">המשך כלקוח/ה חדש/ה</button>
+            </div>
+          </div>
+        </div>
+        <div id="new-block" style="display:none">
+          <p class="qhead">פרטים ליצירת קשר</p>
+          <div class="field">
+            <label class="f">שם מלא</label>
+            <input type="text" id="name2" placeholder="לדוגמה: דנה כהן">
+          </div>
+          <div class="field">
+            <label class="f">מספר טלפון (לוואטסאפ)</label>
+            <input type="text" id="phone2" placeholder="050-1234567" inputmode="numeric">
+            <p class="hint" id="phone2-hint">מספר הטלפון צריך לכלול 10 ספרות</p>
+          </div>
+          <p class="qhead" style="margin:18px 0 10px">מתי עשית לאחרונה בדיקת ראייה?</p>
+          <button class="opt" data-set="lastcheck:year">בשנה האחרונה</button>
+          <button class="opt" data-set="lastcheck:3y">בין שנה ל-3 שנים אחרונות</button>
+          <button class="opt" data-set="lastcheck:more">לפני יותר מ-3 שנים</button>
+          <button class="opt" data-set="lastcheck:na">לא זוכר/ת</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Reason -->
+      <div class="scr" data-step="3">
+        <p class="qhead">מה סיבת הפנייה?</p>
+        <button class="opt" data-set="reason:decline">הדרדרות במצב הראייה</button>
+        <button class="opt" data-set="reason:refresh">רצון להתחדש</button>
+        <button class="opt" data-set="reason:license">בדיקה עבור משרד הרישוי</button>
+        <button class="opt" data-set="reason:hmo">בדיקה בעקבות הפניית קופת חולים "כללית"</button>
+        <button class="opt" data-set="reason:other">אחר</button>
+        <textarea id="reason-other" placeholder="פירוט..." style="display:none;margin-top:8px;min-height:60px;text-align:right"></textarea>
+        <div class="notice-box">החנות מבצעת בדיקות התאמה עבור רישיונות קיימים בלבד, ואינה מבצעת בדיקות להוצאת רישיון נהיגה חדש.</div>
+      </div>
+
+      <!-- Step 4: Price -->
+      <div class="scr" data-step="4" style="text-align:center;padding:26px 10px">
+        <div class="price-icon"><i class="ti ti-cash" aria-hidden="true"></i></div>
+        <p style="font-size:15px;margin:0 0 6px">עלות הבדיקה</p>
+        <p style="font-size:28px;font-weight:500;color:var(--blue-dark);margin:0 0 12px">180 ₪</p>
+        <p style="font-size:13px;color:var(--text-muted)">הסכום מקוזז במלואו ברכישת משקפי ראייה</p>
+      </div>
+
+      <!-- Step 5: Calendar -->
+      <div class="scr" data-step="5">
+        <p class="qhead" style="margin:6px 0 12px">בחירת תור</p>
+        <div class="daytabs" id="daytabs"></div>
+        <div class="examcard">
+          <div class="examicon"><i class="ti ti-eye" style="font-size:17px;color:var(--blue-dark)" aria-hidden="true"></i></div>
+          <div><p class="examname">בדיקת ראייה</p><p class="examsub">מירב האופטיקה</p></div>
+        </div>
+        <div id="slots" class="slotgrid"></div>
+        <p id="slot-info" style="display:none;font-size:12px;color:var(--blue-dark);font-weight:500;margin-top:12px"></p>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:8px">כל בדיקה נמשכת 45 דקות ונועלת את החלון הזה ביומן.</p>
+      </div>
+
+      <!-- Step 6: Note -->
+      <div class="scr" data-step="6">
+        <p class="qhead" style="margin:6px 0 8px">הערה (לא חובה)</p>
+        <textarea id="note" placeholder="יש לך הערה שתרצה/י שנדע מראש?" style="min-height:90px;text-align:right"></textarea>
+      </div>
+
+      <!-- Step 7: Summary -->
+      <div class="scr" data-step="7">
+        <p class="qhead">סיכום הבקשה</p>
+        <p style="font-size:12px;color:var(--text-muted);margin:0 0 14px">אנא בדקו שהפרטים נכונים לפני השליחה</p>
+        <div id="summary" class="summary-box"></div>
+        <p class="err" id="submit-err"></p>
+      </div>
+
+      <!-- Step 8: Thank you -->
+      <div class="scr" data-step="8" style="text-align:center;padding:12px 6px">
+        <img class="logo-img" src="/logo.png" alt="לוגו מירב האופטיקה" style="max-width:130px;margin-bottom:6px">
+        <div class="success-icon"><i class="ti ti-check" aria-hidden="true"></i></div>
+        <p style="font-size:15px;font-weight:500;margin:0 0 8px">הבקשה שלך נשלחה לאישור!</p>
+        <p style="font-size:13px;color:#6b5541;margin:0 0 16px">נציגת החנות תאשר את התור ותשלח לך הודעת אישור בוואטסאפ בהקדם.</p>
+        <div class="notice-box" style="margin-top:0;margin-bottom:14px">במקרה של שינוי או ביטול, האחריות על הלקוח/ה להודיע לחנות מבעוד מועד בטלפון או בוואטסאפ.</div>
+        <a class="bigbtn secondary" id="cta-whatsapp-2" href="#" target="_blank" rel="noopener">
+          <i class="ti ti-brand-whatsapp" style="color:var(--blue)" aria-hidden="true"></i>יש שאלה? יצירת קשר בוואטסאפ
+        </a>
+      </div>
+
+    </div>
+
+    <div class="nav-row" id="nav-row">
+      <button class="ghost" id="back-btn">הקודם</button>
+      <button class="primary" id="next-btn" style="flex:1">הבא</button>
+    </div>
+
+  </div>
+</div>
+
+<script src="/customer-app.js"></script>
+</body>
+</html>
