@@ -72,6 +72,7 @@
   $('pw-toggle').addEventListener('click', function () {
     pwVisible = !pwVisible;
     $('login-pass').style.webkitTextSecurity = pwVisible ? 'none' : 'disc';
+    $('pw-toggle').textContent = pwVisible ? 'הסתר' : 'הצג';
   });
 
   $('login-btn').addEventListener('click', function () {
@@ -162,12 +163,9 @@
         '<div class="row"><span class="k">תור מבוקש</span><span class="v">' + dateHe + ' • ' + r.startTime + '</span></div>' +
         (r.note ? '<div class="row"><span class="k">הערה</span><span class="v">' + escapeHtml(r.note) + '</span></div>' : '') +
         '<div class="actrow">' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, approveText) + '" data-act="approved">' +
-        '<i class="ti ti-check" aria-hidden="true"></i><br>אישור</a>' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, infoText) + '" data-act="needsinfo">' +
-        '<i class="ti ti-help" aria-hidden="true"></i><br>חסר מידע</a>' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, cancelText) + '" data-act="issue" style="grid-column:span 2">' +
-        '<i class="ti ti-phone-x" aria-hidden="true"></i><br>ביטול ויצירת קשר</a>' +
+        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, approveText) + '" data-act="approved">אישור</a>' +
+        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, infoText) + '" data-act="needsinfo">חסר מידע</a>' +
+        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, cancelText) + '" data-act="issue" style="grid-column:span 2">ביטול ויצירת קשר</a>' +
         '</div>' +
         '</div>';
     }).join('');
@@ -217,11 +215,9 @@
         '<div class="row"><span class="k">טלפון</span><span class="v">' + escapeHtml(a.customerPhone) + '</span></div>' +
         '<div class="row"><span class="k">תור</span><span class="v">' + dateHe + ' • ' + a.startTime + '</span></div>' +
         '<div class="actrow">' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(a.customerPhone, reminderText) + '">' +
-        '<i class="ti ti-bell" aria-hidden="true"></i><br>תזכורת</a>' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(a.customerPhone, contactText) + '">' +
-        '<i class="ti ti-brand-whatsapp" aria-hidden="true"></i><br>יצירת קשר</a>' +
-        '<div class="actbtn" data-act="cancelled" style="grid-column:span 2"><i class="ti ti-x" aria-hidden="true"></i><br>ביטול תור</div>' +
+        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(a.customerPhone, reminderText) + '">תזכורת</a>' +
+        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(a.customerPhone, contactText) + '">יצירת קשר</a>' +
+        '<div class="actbtn" data-act="cancelled" style="grid-column:span 2">ביטול תור</div>' +
         '</div>' +
         '</div>';
     }).join('');
@@ -330,7 +326,7 @@
     }
     wrap.innerHTML = list.map(function (b) {
       var delBtn = b.manual
-        ? '<span class="delx" data-id="' + b.id + '" aria-label="בטל חסימה"><i class="ti ti-trash" aria-hidden="true"></i></span>'
+        ? '<span class="delx" data-id="' + b.id + '" aria-label="בטל חסימה">&#10005;</span>'
         : '';
       return '<div class="card" style="margin-bottom:8px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center">' +
