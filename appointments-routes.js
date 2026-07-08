@@ -8,17 +8,21 @@ function normalizePhone(phone) {
   return String(phone || '').replace(/\D/g, '');
 }
 
-const VALID_REASONS = ['decline', 'refresh', 'license', 'hmo', 'other'];
+const VALID_REASONS = ['decline', 'refresh', 'license', 'hmo', 'lenses', 'draft', 'other'];
 
-// GET /api/appointments/availability?date=YYYY-MM-DD
+// GET /api/appointments/availability?date=YYYY-MM-DD&reason=decline
 // Public — used by the booking calendar to render open/closed/busy slots.
+// The duration used to compute busy/free is looked up server-side from the
+// reason (see businessHours.REASON_DURATIONS) — the client never supplies a
+// duration directly.
 router.get('/availability', (req, res) => {
-  const { date } = req.query;
+  const { date, reason } = req.query;
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ error: 'תאריך לא תקין' });
   }
-  const result = businessHours.getAvailability(date);
-  res.json(result);
+  const duration = businessHours.durationForReason(reason);
+  const result = businessHours.getAvailability(date, duration);
+  res.json(Object.assign({ durationMinutes: duration }, result));
 });
 
 // POST /api/appointments
@@ -59,7 +63,8 @@ router.post('/', (req, res) => {
 
   // Re-check on the server — the availability the client saw might be stale
   // by the time it submits (e.g. someone else grabbed the slot a second ago).
-  if (!businessHours.isSlotStillFree(date, startTime)) {
+  const durationMinutes = businessHours.durationForReason(reason);
+  if (!businessHours.isSlotStillFree(date, startTime, durationMinutes)) {
     return res.status(409).json({ error: 'השעה שבחרת כבר לא פנויה, אנא בחר/י שעה אחרת' });
   }
 
@@ -69,7 +74,7 @@ router.post('/', (req, res) => {
     isExisting: !!isExisting,
     date,
     startTime,
-    durationMinutes: businessHours.APPOINTMENT_DURATION,
+    durationMinutes,
     reason,
     reasonOther: reason === 'other' ? reasonOther.trim() : null,
     note: note ? note.trim() : null

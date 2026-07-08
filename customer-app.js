@@ -14,7 +14,7 @@
     note: ''
   };
   var step = 0;
-  var config = { storeWhatsapp: '', appointmentDuration: 45, slotGridMinutes: 30 };
+  var config = { storeWhatsapp: '', reasonDurations: {}, slotGridMinutes: 30 };
   var blockedDates = []; // from /api/blocked-dates
   var days = []; // generated list of the next 14 calendar days
 
@@ -130,8 +130,9 @@
           renderSlotsList(availability);
           updateNext();
           var info = $('slot-info');
-          var end = toTime(toMin(s.time) + config.appointmentDuration);
-          info.textContent = 'התור ינעל את השעות ' + s.time + '–' + end + ' (' + config.appointmentDuration + ' דקות)';
+          var dur = availability.durationMinutes || 30;
+          var end = toTime(toMin(s.time) + dur);
+          info.textContent = 'התור ינעל את השעות ' + s.time + '–' + end;
           info.style.display = 'block';
         });
       }
@@ -143,7 +144,7 @@
   function loadSlots() {
     var wrap = $('slots');
     wrap.innerHTML = '<div class="closed-msg" style="grid-column:1/-1">טוען שעות פנויות...</div>';
-    api('GET', '/api/appointments/availability?date=' + encodeURIComponent(state.date))
+    api('GET', '/api/appointments/availability?date=' + encodeURIComponent(state.date) + '&reason=' + encodeURIComponent(state.reason || ''))
       .then(renderSlotsList)
       .catch(function () {
         wrap.innerHTML = '<div class="closed-msg" style="grid-column:1/-1">שגיאה בטעינת השעות. נסה/י שוב.</div>';
@@ -152,10 +153,12 @@
 
   function reasonLabel(r) {
     return {
-      decline: 'הדרדרות במצב הראייה',
+      decline: 'שינוי בראייה',
       refresh: 'רצון להתחדש',
       license: 'בדיקה עבור משרד הרישוי',
       hmo: 'בדיקה בעקבות הפניית קופת חולים "כללית"',
+      lenses: 'התאמת עדשות מגע',
+      draft: 'בדיקת ראייה לצו ראשון',
       other: 'אחר: ' + (state.reasonOther || '—')
     }[r] || '—';
   }
@@ -285,7 +288,7 @@
     });
   });
 
-  $('reason-other').addEventListener('input', function () { state.reasonOther = this.value; });
+  $('reason-other').addEventListener('input', function () { state.reasonOther = this.value; updateNext(); });
   $('note').addEventListener('input', function () { state.note = this.value; });
 
   function handlePhoneInput(inputId, hintId) {

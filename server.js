@@ -50,10 +50,11 @@ app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo.png')
 
 // ---- API ----
 app.get('/api/config', (req, res) => {
+  const businessHours = require('./businessHours');
   res.json({
     storeWhatsapp: process.env.STORE_WHATSAPP || '',
-    appointmentDuration: parseInt(process.env.APPOINTMENT_DURATION || '45', 10),
-    slotGridMinutes: parseInt(process.env.SLOT_GRID_MINUTES || '30', 10)
+    reasonDurations: businessHours.REASON_DURATIONS,
+    slotGridMinutes: businessHours.SLOT_GRID_MINUTES
   });
 });
 

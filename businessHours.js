@@ -1,14 +1,33 @@
 // Business hours + slot math.
 //
-// Customers pick a slot from a grid every SLOT_GRID_MINUTES (default 30),
-// e.g. 12:00 / 12:30 / 13:00 — but every appointment actually occupies
-// APPOINTMENT_DURATION minutes (default 45) once booked. So booking the
-// 12:00 slot locks 12:00–12:45, which fully blocks the 12:00–12:30 grid cell
-// and half-blocks the 12:30–13:00 one.
+// Customers always pick a slot from a grid every SLOT_GRID_MINUTES (default
+// 30), e.g. 12:00 / 12:30 / 13:00 — but different visit types occupy
+// different amounts of time once booked (see REASON_DURATIONS below). So
+// booking a 60-minute contact-lens fitting at 12:00 locks 12:00–13:00, which
+// fully blocks two grid cells; booking a 15-minute army-draft check at 12:00
+// only half-blocks the 12:00–12:30 cell.
 
 const db = require('./db');
 
-const APPOINTMENT_DURATION = parseInt(process.env.APPOINTMENT_DURATION || '45', 10);
+// How long each visit reason actually locks on the calendar, in minutes.
+// This is the single source of truth for appointment duration — the client
+// never gets to decide this, it only tells the server which reason was
+// selected and the server looks up the duration here.
+const REASON_DURATIONS = {
+  decline: 30, // שינוי בראייה
+  refresh: 30, // רצון להתחדש
+  license: 30, // בדיקה עבור משרד הרישוי
+  hmo: 30, // בדיקה בעקבות הפניית קופת חולים
+  lenses: 60, // התאמת עדשות מגע
+  draft: 15, // בדיקת ראייה לצו ראשון
+  other: 30
+};
+const DEFAULT_DURATION = 30;
+
+function durationForReason(reason) {
+  return REASON_DURATIONS[reason] || DEFAULT_DURATION;
+}
+
 const SLOT_GRID_MINUTES = parseInt(process.env.SLOT_GRID_MINUTES || '30', 10);
 
 const OPEN_SUN_THU = process.env.OPEN_TIME_SUN_THU || '09:00';
@@ -60,11 +79,13 @@ function overlaps(aStart, aEnd, bStart, bEnd) {
 }
 
 // Returns an ordered list of { time: 'HH:MM', busy: boolean } for the given
-// date, at the configured grid resolution, taking into account:
+// date and visit duration, at the configured grid resolution, taking into
+// account:
 //  - the store's weekly hours (and Friday/erev shortened hours)
 //  - full closures (holiday, manual block, Saturday)
-//  - existing pending/approved appointments that day (45-min lock)
-function getAvailability(dateStr) {
+//  - existing pending/approved appointments that day
+function getAvailability(dateStr, durationMinutes) {
+  const duration = durationMinutes || DEFAULT_DURATION;
   if (isClosedDate(dateStr)) return { closed: true, slots: [] };
 
   const hours = erevOverrideHours(dateStr) || hoursForDate(dateStr);
@@ -72,7 +93,7 @@ function getAvailability(dateStr) {
 
   const openMin = toMinutes(hours.open);
   const closeMin = toMinutes(hours.close);
-  const lastStart = closeMin - APPOINTMENT_DURATION;
+  const lastStart = closeMin - duration;
   if (lastStart < openMin) return { closed: true, slots: [] };
 
   const active = db.activeAppointmentsForDate(dateStr).map(a => {
@@ -82,7 +103,7 @@ function getAvailability(dateStr) {
 
   const slots = [];
   for (let m = openMin; m <= lastStart; m += SLOT_GRID_MINUTES) {
-    const candidateEnd = m + APPOINTMENT_DURATION;
+    const candidateEnd = m + duration;
     const busy = active.some(([bS, bE]) => overlaps(m, candidateEnd, bS, bE));
     slots.push({ time: toHHMM(m), busy });
   }
@@ -91,14 +112,15 @@ function getAvailability(dateStr) {
 
 // Server-side re-check before actually creating an appointment, so two
 // people racing for the same slot can't both succeed.
-function isSlotStillFree(dateStr, startTime) {
+function isSlotStillFree(dateStr, startTime, durationMinutes) {
+  const duration = durationMinutes || DEFAULT_DURATION;
   if (isClosedDate(dateStr)) return false;
   const hours = erevOverrideHours(dateStr) || hoursForDate(dateStr);
   if (!hours) return false;
   const openMin = toMinutes(hours.open);
   const closeMin = toMinutes(hours.close);
   const start = toMinutes(startTime);
-  const end = start + APPOINTMENT_DURATION;
+  const end = start + duration;
   if (start < openMin || end > closeMin) return false;
 
   const active = db.activeAppointmentsForDate(dateStr).map(a => {
@@ -109,7 +131,9 @@ function isSlotStillFree(dateStr, startTime) {
 }
 
 module.exports = {
-  APPOINTMENT_DURATION,
+  REASON_DURATIONS,
+  DEFAULT_DURATION,
+  durationForReason,
   SLOT_GRID_MINUTES,
   toMinutes,
   toHHMM,
