@@ -83,7 +83,7 @@ body {
 }
 
 .scr { display: none; }
-.scr.active { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+.scr.active { display: flex; flex-direction: column; flex: 1; min-height: 100%; }
 
 .scr-wrap { flex: 1; overflow-y: auto; min-height: 0; }
 .scr-wrap::-webkit-scrollbar { width: 4px; }
