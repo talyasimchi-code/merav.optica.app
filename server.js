@@ -47,6 +47,7 @@ app.get('/styles.css', (req, res) => res.sendFile(path.join(__dirname, 'styles.c
 app.get('/customer-app.js', (req, res) => res.sendFile(path.join(__dirname, 'customer-app.js')));
 app.get('/admin-app.js', (req, res) => res.sendFile(path.join(__dirname, 'admin-app.js')));
 app.get('/logo.png', (req, res) => res.sendFile(path.join(__dirname, 'logo.png')));
+app.get('/bg-texture.jpg', (req, res) => res.sendFile(path.join(__dirname, 'bg-texture.jpg')));
 
 // ---- API ----
 app.get('/api/config', (req, res) => {

@@ -78,12 +78,32 @@ function overlaps(aStart, aEnd, bStart, bEnd) {
   return aStart < bEnd && bStart < aEnd;
 }
 
+// Store hours are Israel hours regardless of which server/timezone this
+// process happens to run on (most hosts run UTC). Everything that compares
+// against "now" goes through this so a slot at 09:00 Israel time isn't
+// accidentally treated as already-past because the server thinks it's still
+// last night in UTC.
+function nowInIsrael() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Jerusalem',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(new Date());
+  const map = {};
+  parts.forEach(p => { map[p.type] = p.value; });
+  return {
+    dateStr: `${map.year}-${map.month}-${map.day}`,
+    minutes: parseInt(map.hour, 10) * 60 + parseInt(map.minute, 10)
+  };
+}
+
 // Returns an ordered list of { time: 'HH:MM', busy: boolean } for the given
 // date and visit duration, at the configured grid resolution, taking into
 // account:
 //  - the store's weekly hours (and Friday/erev shortened hours)
 //  - full closures (holiday, manual block, Saturday)
 //  - existing pending/approved appointments that day
+//  - if the date is today, any slot that has already started
 function getAvailability(dateStr, durationMinutes) {
   const duration = durationMinutes || DEFAULT_DURATION;
   if (isClosedDate(dateStr)) return { closed: true, slots: [] };
@@ -101,17 +121,22 @@ function getAvailability(dateStr, durationMinutes) {
     return [start, start + a.durationMinutes];
   });
 
+  const now = nowInIsrael();
+  const isToday = dateStr === now.dateStr;
+
   const slots = [];
   for (let m = openMin; m <= lastStart; m += SLOT_GRID_MINUTES) {
     const candidateEnd = m + duration;
-    const busy = active.some(([bS, bE]) => overlaps(m, candidateEnd, bS, bE));
+    const alreadyPast = isToday && m <= now.minutes;
+    const busy = alreadyPast || active.some(([bS, bE]) => overlaps(m, candidateEnd, bS, bE));
     slots.push({ time: toHHMM(m), busy });
   }
   return { closed: false, slots };
 }
 
 // Server-side re-check before actually creating an appointment, so two
-// people racing for the same slot can't both succeed.
+// people racing for the same slot can't both succeed, and so nobody can
+// book a time that has already started today.
 function isSlotStillFree(dateStr, startTime, durationMinutes) {
   const duration = durationMinutes || DEFAULT_DURATION;
   if (isClosedDate(dateStr)) return false;
@@ -122,6 +147,9 @@ function isSlotStillFree(dateStr, startTime, durationMinutes) {
   const start = toMinutes(startTime);
   const end = start + duration;
   if (start < openMin || end > closeMin) return false;
+
+  const now = nowInIsrael();
+  if (dateStr === now.dateStr && start <= now.minutes) return false;
 
   const active = db.activeAppointmentsForDate(dateStr).map(a => {
     const s = toMinutes(a.startTime);
