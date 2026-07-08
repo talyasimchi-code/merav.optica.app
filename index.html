@@ -81,20 +81,24 @@
       <div class="scr" data-step="3">
         <p class="qhead">מה סיבת הפנייה?</p>
         <button class="opt" data-set="reason:decline">שינוי בראייה</button>
-        <button class="opt" data-set="reason:refresh">רצון להתחדש</button>
-        <button class="opt" data-set="reason:license">בדיקה עבור משרד הרישוי</button>
-        <button class="opt" data-set="reason:hmo">בדיקה בעקבות הפניית קופת חולים "כללית"</button>
         <button class="opt" data-set="reason:lenses">התאמת עדשות מגע</button>
+        <button class="opt" data-set="reason:hmo">בדיקה בעקבות הפניית קופת חולים "כללית"</button>
         <button class="opt" data-set="reason:draft">בדיקת ראייה לצו ראשון</button>
+        <button class="opt" data-set="reason:license">בדיקה עבור משרד הרישוי</button>
         <button class="opt" data-set="reason:other">אחר</button>
         <textarea id="reason-other" placeholder="פירוט..." style="display:none;margin-top:8px;min-height:60px;text-align:right"></textarea>
       </div>
 
       <!-- Step 4: Price -->
-      <div class="scr" data-step="4" style="text-align:center;padding:26px 10px">
+      <div class="scr" data-step="4" style="text-align:center;padding:26px 10px;overflow-y:auto">
         <p style="font-size:15px;margin:0 0 6px">עלות הבדיקה</p>
         <p style="font-size:28px;font-weight:500;color:var(--blue-dark);margin:0 0 12px">290 ₪</p>
-        <p style="font-size:13px;color:var(--text-muted)">הסכום מקוזז במלואו ברכישת משקפי ראייה</p>
+        <p style="font-size:13px;color:var(--text-muted);margin:0 0 18px">הסכום מקוזז במלואו ברכישת משקפי ראייה</p>
+        <div class="summary-box" style="text-align:center;margin-bottom:12px">
+          <div class="summary-row"><span class="k">בדיקת ראייה לצו ראשון / בדיקה עבור משרד הרישוי</span><span class="v">50 ₪</span></div>
+          <div class="summary-row"><span class="k">התאמת עדשות מגע</span><span class="v">390 ₪</span></div>
+        </div>
+        <p style="font-size:12px;color:var(--text-muted)">במקרה של בדיקה חוזרת או עדכון מרשם, הבדיקה כלולה במחיר העדשות.</p>
       </div>
 
       <!-- Step 5: Calendar -->

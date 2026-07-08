@@ -8,7 +8,7 @@ function normalizePhone(phone) {
   return String(phone || '').replace(/\D/g, '');
 }
 
-const VALID_REASONS = ['decline', 'refresh', 'license', 'hmo', 'lenses', 'draft', 'other'];
+const VALID_REASONS = ['decline', 'license', 'hmo', 'lenses', 'draft', 'other'];
 
 // GET /api/appointments/availability?date=YYYY-MM-DD&reason=decline
 // Public — used by the booking calendar to render open/closed/busy slots.

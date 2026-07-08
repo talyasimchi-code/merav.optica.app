@@ -24,6 +24,10 @@ const REASON_DURATIONS = {
 };
 const DEFAULT_DURATION = 30;
 
+// Customers can't book a slot starting less than this many minutes from now,
+// so the staff always has some notice before someone walks in.
+const BOOKING_LEAD_MINUTES = 30;
+
 function durationForReason(reason) {
   return REASON_DURATIONS[reason] || DEFAULT_DURATION;
 }
@@ -127,8 +131,8 @@ function getAvailability(dateStr, durationMinutes) {
   const slots = [];
   for (let m = openMin; m <= lastStart; m += SLOT_GRID_MINUTES) {
     const candidateEnd = m + duration;
-    const alreadyPast = isToday && m <= now.minutes;
-    const busy = alreadyPast || active.some(([bS, bE]) => overlaps(m, candidateEnd, bS, bE));
+    const tooSoon = isToday && m < now.minutes + BOOKING_LEAD_MINUTES;
+    const busy = tooSoon || active.some(([bS, bE]) => overlaps(m, candidateEnd, bS, bE));
     slots.push({ time: toHHMM(m), busy });
   }
   return { closed: false, slots };
@@ -149,7 +153,7 @@ function isSlotStillFree(dateStr, startTime, durationMinutes) {
   if (start < openMin || end > closeMin) return false;
 
   const now = nowInIsrael();
-  if (dateStr === now.dateStr && start <= now.minutes) return false;
+  if (dateStr === now.dateStr && start < now.minutes + BOOKING_LEAD_MINUTES) return false;
 
   const active = db.activeAppointmentsForDate(dateStr).map(a => {
     const s = toMinutes(a.startTime);
