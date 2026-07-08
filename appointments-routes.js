@@ -86,9 +86,20 @@ router.post('/', (req, res) => {
 // ---- Admin-only endpoints below ----
 
 // GET /api/appointments?status=pending
+// Note: when asked for "pending", this also includes "needsinfo" — those are
+// still awaiting a final decision (approve/cancel) after the owner followed
+// up with the customer, so they stay visible in the pending queue, just
+// rendered differently by the client.
 router.get('/', requireAdmin, (req, res) => {
   const { status, from, to } = req.query;
-  const list = db.listAppointments({ status, from, to });
+  let list;
+  if (status === 'pending') {
+    list = db
+      .listAppointments({ from, to })
+      .filter(a => a.status === 'pending' || a.status === 'needsinfo');
+  } else {
+    list = db.listAppointments({ status, from, to });
+  }
   // Most recent request first for the pending queue, chronological for others
   list.sort((a, b) => (a.date + a.startTime).localeCompare(b.date + b.startTime));
   res.json({ appointments: list });

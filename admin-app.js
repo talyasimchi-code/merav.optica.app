@@ -154,7 +154,30 @@
       var badge = r.isExisting
         ? '<span class="badge existing">לקוח/ה קיים/ה</span>'
         : '<span class="badge new">לקוח/ה חדש/ה</span>';
-      return '<div class="card" data-id="' + r.id + '">' +
+
+      var isNeedsInfo = r.status === 'needsinfo';
+
+      var actionsHtml;
+      if (isNeedsInfo) {
+        // Merav already messaged the customer on WhatsApp to sort out the
+        // missing details. Now she just needs to record the final outcome —
+        // no need to send another WhatsApp from here for the cancel case.
+        actionsHtml =
+          '<div class="statusbadge s-needsinfo">ממתין לתשובת לקוח — ממתין להחלטה סופית</div>' +
+          '<div class="actrow">' +
+          '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, approveText) + '" data-act="approved">אישור</a>' +
+          '<div class="actbtn" data-act="cancelled">ביטול</div>' +
+          '</div>';
+      } else {
+        actionsHtml =
+          '<div class="actrow">' +
+          '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, approveText) + '" data-act="approved">אישור</a>' +
+          '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, infoText) + '" data-act="needsinfo">חסר מידע</a>' +
+          '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, cancelText) + '" data-act="issue" style="grid-column:span 2">ביטול ויצירת קשר</a>' +
+          '</div>';
+      }
+
+      return '<div class="card' + (isNeedsInfo ? ' card-muted' : '') + '" data-id="' + r.id + '">' +
         '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
         '<span style="font-size:14px;font-weight:500">' + escapeHtml(r.customerName) + '</span>' + badge +
         '</div>' +
@@ -162,11 +185,7 @@
         '<div class="row"><span class="k">סיבת פנייה</span><span class="v">' + escapeHtml(reasonText) + '</span></div>' +
         '<div class="row"><span class="k">תור מבוקש</span><span class="v">' + dateHe + ' • ' + r.startTime + '</span></div>' +
         (r.note ? '<div class="row"><span class="k">הערה</span><span class="v">' + escapeHtml(r.note) + '</span></div>' : '') +
-        '<div class="actrow">' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, approveText) + '" data-act="approved">אישור</a>' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, infoText) + '" data-act="needsinfo">חסר מידע</a>' +
-        '<a class="actbtn" target="_blank" rel="noopener" href="' + waLink(r.customerPhone, cancelText) + '" data-act="issue" style="grid-column:span 2">ביטול ויצירת קשר</a>' +
-        '</div>' +
+        actionsHtml +
         '</div>';
     }).join('');
 
