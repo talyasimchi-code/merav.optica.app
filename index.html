@@ -39,42 +39,21 @@
 
       <!-- Step 2: Details -->
       <div class="scr" data-step="2">
-        <div id="existing-block">
-          <p class="qhead">הזנת פרטים לאיתור במערכת</p>
-          <div class="field">
-            <label class="f">שם מלא</label>
-            <input type="text" id="name1" placeholder="לדוגמה: דנה כהן">
-          </div>
-          <div class="field">
-            <label class="f">מספר טלפון</label>
-            <input type="text" id="phone1" placeholder="050-1234567" inputmode="numeric">
-            <p class="hint" id="phone1-hint">מספר הטלפון צריך לכלול 10 ספרות</p>
-          </div>
-          <div id="notfound-box" class="notfound-box" style="display:none">
-            <p style="margin:0 0 10px">מתקשים לאתר אותך במערכת. נסה/י שנית, או המשך/כי בבקשה כלקוח/ה חדש/ה</p>
-            <div style="display:flex;gap:8px">
-              <button class="nav-row-btn" id="retry-lookup-btn" style="flex:1;padding:9px;border-radius:8px;border:1px solid var(--border);background:var(--card);cursor:pointer;font-size:12px">נסה שנית</button>
-              <button class="nav-row-btn" id="switch-to-new-btn" style="flex:1;padding:9px;border-radius:8px;border:none;background:var(--blue);color:#fff;cursor:pointer;font-size:12px">המשך כלקוח/ה חדש/ה</button>
-            </div>
-          </div>
+        <p class="qhead">פרטים ליצירת קשר</p>
+        <div class="field">
+          <label class="f">שם מלא</label>
+          <input type="text" id="name" placeholder="לדוגמה: דנה כהן">
         </div>
-        <div id="new-block" style="display:none">
-          <p class="qhead">פרטים ליצירת קשר</p>
-          <div class="field">
-            <label class="f">שם מלא</label>
-            <input type="text" id="name2" placeholder="לדוגמה: דנה כהן">
-          </div>
-          <div class="field">
-            <label class="f">מספר טלפון (לוואטסאפ)</label>
-            <input type="text" id="phone2" placeholder="050-1234567" inputmode="numeric">
-            <p class="hint" id="phone2-hint">מספר הטלפון צריך לכלול 10 ספרות</p>
-          </div>
-          <p class="qhead" style="margin:18px 0 10px">מתי עשית לאחרונה בדיקת ראייה?</p>
-          <button class="opt" data-set="lastcheck:year">בשנה האחרונה</button>
-          <button class="opt" data-set="lastcheck:3y">בין שנה ל-3 שנים אחרונות</button>
-          <button class="opt" data-set="lastcheck:more">לפני יותר מ-3 שנים</button>
-          <button class="opt" data-set="lastcheck:na">לא זוכר/ת</button>
+        <div class="field">
+          <label class="f">מספר טלפון (לוואטסאפ)</label>
+          <input type="text" id="phone" placeholder="050-1234567" inputmode="numeric">
+          <p class="hint" id="phone-hint">מספר הטלפון צריך לכלול 10 ספרות</p>
         </div>
+        <p class="qhead" style="margin:18px 0 10px">מתי עשית לאחרונה בדיקת ראייה?</p>
+        <button class="opt" data-set="lastcheck:year">בשנה האחרונה</button>
+        <button class="opt" data-set="lastcheck:3y">בין שנה ל-3 שנים אחרונות</button>
+        <button class="opt" data-set="lastcheck:more">לפני יותר מ-3 שנים</button>
+        <button class="opt" data-set="lastcheck:na">לא זוכר/ת</button>
       </div>
 
       <!-- Step 3: Reason -->

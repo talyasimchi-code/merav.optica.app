@@ -198,22 +198,14 @@
   function canProceed() {
     var phoneValid = digitsOnly(state.phone).length === 10;
     if (step === 1) return !!state.ctype;
-    if (step === 2) {
-      if (state.ctype === 'existing') return false; // handled by lookup, not "Next"
-      return !!state.name && phoneValid && !!state.lastcheck;
-    }
+    if (step === 2) return !!state.name && phoneValid && !!state.lastcheck;
     if (step === 3) return !!state.reason && (state.reason !== 'other' || !!(state.reasonOther && state.reasonOther.trim()));
     if (step === 5) return !!state.slot;
     return true;
   }
 
   function updateNext() {
-    var nextBtn = $('next-btn');
-    if (step === 2 && state.ctype === 'existing') {
-      nextBtn.disabled = false; // repurposed as "בדוק פרטים" — see goto()
-      return;
-    }
-    nextBtn.disabled = !canProceed();
+    $('next-btn').disabled = !canProceed();
   }
 
   function goto(n) {
@@ -244,8 +236,6 @@
 
       if (n === 8) {
         nav.style.display = 'none';
-      } else if (n === 2 && state.ctype === 'existing') {
-        next.textContent = 'בדוק פרטים';
       } else if (n === 7) {
         next.textContent = 'שליחת בקשה';
       } else {
@@ -276,11 +266,6 @@
       el.classList.add('sel');
       state[key] = val;
 
-      if (key === 'ctype') {
-        $('existing-block').style.display = val === 'existing' ? 'block' : 'none';
-        $('new-block').style.display = val === 'new' ? 'block' : 'none';
-        $('notfound-box').style.display = 'none';
-      }
       if (key === 'reason') {
         $('reason-other').style.display = val === 'other' ? 'block' : 'none';
       }
@@ -291,81 +276,14 @@
   $('reason-other').addEventListener('input', function () { state.reasonOther = this.value; updateNext(); });
   $('note').addEventListener('input', function () { state.note = this.value; });
 
-  function handlePhoneInput(inputId, hintId) {
-    $(inputId).addEventListener('input', function () {
-      var digits = digitsOnly(this.value);
-      $(hintId).style.display = digits.length > 0 && digits.length !== 10 ? 'block' : 'none';
-      syncNameAndPhone();
-      updateNext();
-    });
-  }
-  handlePhoneInput('phone1', 'phone1-hint');
-  handlePhoneInput('phone2', 'phone2-hint');
-  $('name1').addEventListener('input', syncNameAndPhone);
-  $('name2').addEventListener('input', syncNameAndPhone);
-
-  function syncNameAndPhone() {
-    if (state.ctype === 'existing') {
-      state.name = $('name1').value;
-      state.phone = $('phone1').value;
-    } else {
-      state.name = $('name2').value;
-      state.phone = $('phone2').value;
-    }
-  }
-
-  // ---------- Existing-customer lookup ----------
-
-  function doLookup() {
-    syncNameAndPhone();
-    var digits = digitsOnly(state.phone);
-    if (!state.name || digits.length !== 10) {
-      updateNext();
-      return;
-    }
-    var next = $('next-btn');
-    next.disabled = true;
-    next.textContent = 'בודק...';
-    api('POST', '/api/customers/lookup', { fullName: state.name, phone: digits })
-      .then(function (res) {
-        if (res.found) {
-          state.customerId = res.customer.id;
-          state.name = res.customer.fullName;
-          state.phone = res.customer.phone;
-          $('notfound-box').style.display = 'none';
-          step = 3;
-          goto(step);
-        } else {
-          $('notfound-box').style.display = 'block';
-          next.textContent = 'בדוק פרטים';
-          next.disabled = false;
-        }
-      })
-      .catch(function () {
-        $('notfound-box').style.display = 'block';
-        next.textContent = 'בדוק פרטים';
-        next.disabled = false;
-      });
-  }
-
-  $('retry-lookup-btn').addEventListener('click', function () {
-    $('notfound-box').style.display = 'none';
-    $('name1').value = '';
-    $('phone1').value = '';
-    state.name = '';
-    state.phone = '';
-    $('name1').focus();
+  $('phone').addEventListener('input', function () {
+    var digits = digitsOnly(this.value);
+    $('phone-hint').style.display = digits.length > 0 && digits.length !== 10 ? 'block' : 'none';
+    state.phone = this.value;
+    updateNext();
   });
-
-  $('switch-to-new-btn').addEventListener('click', function () {
-    state.ctype = 'new';
-    document.querySelectorAll('.opt[data-set^="ctype:"]').forEach(function (x) { x.classList.remove('sel'); });
-    document.querySelector('.opt[data-set="ctype:new"]').classList.add('sel');
-    $('existing-block').style.display = 'none';
-    $('new-block').style.display = 'block';
-    $('notfound-box').style.display = 'none';
-    $('name2').value = $('name1').value;
-    syncNameAndPhone();
+  $('name').addEventListener('input', function () {
+    state.name = this.value;
     updateNext();
   });
 
@@ -409,10 +327,6 @@
   $('cta-book').addEventListener('click', function () { step = 1; goto(step); });
 
   $('next-btn').addEventListener('click', function () {
-    if (step === 2 && state.ctype === 'existing') {
-      doLookup();
-      return;
-    }
     if (!canProceed()) return;
     if (step === 7) {
       submitRequest();
