@@ -39,8 +39,10 @@
   }
 
   function isFullyClosed(dateStr) {
-    var b = blockedDates.find(function (x) { return x.date === dateStr; });
-    return !!(b && (b.type === 'holiday' || b.type === 'manual'));
+    var b = blockedDates.find(function (x) {
+      return x.date === dateStr && (x.type === 'holiday' || (x.type === 'manual' && !x.startTime));
+    });
+    return !!b;
   }
 
   function buildDays() {

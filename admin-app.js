@@ -370,7 +370,9 @@
         ? '<span class="delx" data-id="' + b.id + '" aria-label="בטל חסימה">&#10005;</span>'
         : '';
       var isHourBlock = b.type === 'manual' && b.startTime && b.endTime;
-      var typeLabel = isHourBlock ? 'חסימת שעות ' + b.startTime + '–' + b.endTime : (TYPE_LABEL[b.type] || b.type);
+      var typeLabel = isHourBlock
+        ? 'חסימת שעות <span dir="ltr" style="unicode-bidi:isolate">' + b.startTime + '\u2013' + b.endTime + '</span>'
+        : (TYPE_LABEL[b.type] || b.type);
       return '<div class="card" style="margin-bottom:8px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center">' +
         '<span style="font-size:13px;font-weight:500">' + fmtDateHe(b.date) + '</span>' + delBtn +

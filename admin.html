@@ -70,16 +70,16 @@
         <div id="blocked-list" style="margin-bottom:14px"></div>
         <div class="card">
           <p style="font-size:12px;font-weight:500;margin:0 0 10px">חסימה ידנית (יום שלם)</p>
-          <div class="field"><label class="f">תאריך</label><input type="text" id="block-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')"></div>
+          <div class="field"><label class="f">תאריך</label><input type="date" id="block-date" dir="ltr" style="text-align:center"></div>
           <div class="field"><label class="f">הערה (לא חובה)</label><input type="text" id="block-note" placeholder="חופשה"></div>
           <button class="bigbtn secondary" id="block-btn">חסימת יום שלם</button>
         </div>
         <div class="card">
           <p style="font-size:12px;font-weight:500;margin:0 0 10px">חסימת שעות</p>
-          <div class="field"><label class="f">תאריך</label><input type="text" id="hourblock-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')"></div>
+          <div class="field"><label class="f">תאריך</label><input type="date" id="hourblock-date" dir="ltr" style="text-align:center"></div>
           <div style="display:flex;gap:8px">
-            <div class="field" style="flex:1"><label class="f">משעה</label><input type="text" id="hourblock-start" placeholder="HH:MM" onfocus="(this.type='time')"></div>
-            <div class="field" style="flex:1"><label class="f">עד שעה</label><input type="text" id="hourblock-end" placeholder="HH:MM" onfocus="(this.type='time')"></div>
+            <div class="field" style="flex:1"><label class="f">משעה</label><input type="time" id="hourblock-start" dir="ltr" style="text-align:center"></div>
+            <div class="field" style="flex:1"><label class="f">עד שעה</label><input type="time" id="hourblock-end" dir="ltr" style="text-align:center"></div>
           </div>
           <div class="field"><label class="f">הערה (לא חובה)</label><input type="text" id="hourblock-note" placeholder="פגישה, חופשה חלקית..."></div>
           <p class="err" id="hourblock-err"></p>
