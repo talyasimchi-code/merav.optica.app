@@ -10,13 +10,26 @@ router.get('/', (req, res) => {
   res.json({ blockedDates: db.listBlockedDates() });
 });
 
-// POST /api/blocked-dates  { date, note }  — admin manual block
+// POST /api/blocked-dates  { date, note, startTime?, endTime? }  — admin
+// manual block. If startTime+endTime are given, this only blocks that window
+// (e.g. 12:00–13:00); otherwise it closes the whole day.
 router.post('/', requireAdmin, (req, res) => {
-  const { date, note } = req.body || {};
+  const { date, note, startTime, endTime } = req.body || {};
   if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) {
     return res.status(400).json({ error: 'תאריך לא תקין' });
   }
-  const record = db.addBlockedDate({ date, type: 'manual', note, manual: true });
+  let st = null, et = null;
+  if (startTime || endTime) {
+    if (!/^\d{2}:\d{2}$/.test(startTime || '') || !/^\d{2}:\d{2}$/.test(endTime || '')) {
+      return res.status(400).json({ error: 'שעות לא תקינות' });
+    }
+    if (startTime >= endTime) {
+      return res.status(400).json({ error: 'שעת ההתחלה צריכה להיות לפני שעת הסיום' });
+    }
+    st = startTime;
+    et = endTime;
+  }
+  const record = db.addBlockedDate({ date, type: 'manual', note, manual: true, startTime: st, endTime: et });
   res.status(201).json({ blockedDate: record });
 });
 

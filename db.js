@@ -154,28 +154,62 @@ function activeAppointmentsForDate(date) {
   );
 }
 
-// ---------- Blocked dates (holidays, erev chag, manual closures) ----------
+// ---------- Blocked dates (holidays, erev chag, manual closures/hour-blocks) ----------
 
 function listBlockedDates() {
   const data = read();
   return data.blockedDates;
 }
 
+// A full-day closure: either an auto-detected holiday, or a manual block
+// with no start/end time (the owner blocked the whole day).
+function findFullDayBlock(date) {
+  const data = read();
+  return (
+    data.blockedDates.find(
+      b => b.date === date && (b.type === 'holiday' || (b.type === 'manual' && !b.startTime))
+    ) || null
+  );
+}
+
+function findErevBlock(date) {
+  const data = read();
+  return data.blockedDates.find(b => b.date === date && b.type === 'erev') || null;
+}
+
+// All manual hour-range blocks (not full-day) for a given date — these behave
+// like a "fake appointment" that blocks that window without closing the
+// whole day.
+function findHourBlocksForDate(date) {
+  const data = read();
+  return data.blockedDates.filter(
+    b => b.date === date && b.type === 'manual' && b.startTime && b.endTime
+  );
+}
+
+// Kept for callers that just want "is there anything blocking this date at
+// all" without caring which kind.
 function findBlockedDate(date) {
   const data = read();
   return data.blockedDates.find(b => b.date === date) || null;
 }
 
-function addBlockedDate({ date, type, note, manual }) {
+function addBlockedDate({ date, type, note, manual, startTime, endTime }) {
   const data = read();
-  const already = data.blockedDates.find(b => b.date === date && b.type === type);
+  const isTimed = !!(startTime && endTime);
+  const already = data.blockedDates.find(b => {
+    if (b.date !== date || b.type !== type) return false;
+    return isTimed ? b.startTime === startTime && b.endTime === endTime : !b.startTime;
+  });
   if (already) return already;
   const record = {
     id: data.nextBlockedId++,
     date,
     type, // 'holiday' | 'erev' | 'manual'
     note: note || null,
-    manual: !!manual
+    manual: !!manual,
+    startTime: startTime || null,
+    endTime: endTime || null
   };
   data.blockedDates.push(record);
   write(data);
@@ -201,7 +235,9 @@ function replaceAutoBlockedDates(newEntries) {
       date: e.date,
       type: e.type,
       note: e.note || null,
-      manual: false
+      manual: false,
+      startTime: null,
+      endTime: null
     }))
   );
   data.blockedDates = merged;
@@ -222,6 +258,9 @@ module.exports = {
   activeAppointmentsForDate,
   listBlockedDates,
   findBlockedDate,
+  findFullDayBlock,
+  findErevBlock,
+  findHourBlocksForDate,
   addBlockedDate,
   removeBlockedDate,
   replaceAutoBlockedDates

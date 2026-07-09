@@ -57,6 +57,7 @@
         <div class="legend">
           <span><span class="lg-box" style="background:var(--blue)"></span>מלא</span>
           <span><span class="lg-box half"></span>חצי מלא</span>
+          <span><span class="lg-box" style="background:#b8b0a0"></span>חסום</span>
         </div>
         <div class="wk-wrap"><div class="wk-grid" id="week-grid"></div></div>
       </div>
@@ -68,10 +69,21 @@
         <p class="err" id="sync-err"></p>
         <div id="blocked-list" style="margin-bottom:14px"></div>
         <div class="card">
-          <p style="font-size:12px;font-weight:500;margin:0 0 10px">חסימה ידנית</p>
+          <p style="font-size:12px;font-weight:500;margin:0 0 10px">חסימה ידנית (יום שלם)</p>
           <div class="field"><label class="f">תאריך</label><input type="text" id="block-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')"></div>
           <div class="field"><label class="f">הערה (לא חובה)</label><input type="text" id="block-note" placeholder="חופשה"></div>
-          <button class="bigbtn secondary" id="block-btn">חסימת תאריך</button>
+          <button class="bigbtn secondary" id="block-btn">חסימת יום שלם</button>
+        </div>
+        <div class="card">
+          <p style="font-size:12px;font-weight:500;margin:0 0 10px">חסימת שעות</p>
+          <div class="field"><label class="f">תאריך</label><input type="text" id="hourblock-date" placeholder="YYYY-MM-DD" onfocus="(this.type='date')"></div>
+          <div style="display:flex;gap:8px">
+            <div class="field" style="flex:1"><label class="f">משעה</label><input type="text" id="hourblock-start" placeholder="HH:MM" onfocus="(this.type='time')"></div>
+            <div class="field" style="flex:1"><label class="f">עד שעה</label><input type="text" id="hourblock-end" placeholder="HH:MM" onfocus="(this.type='time')"></div>
+          </div>
+          <div class="field"><label class="f">הערה (לא חובה)</label><input type="text" id="hourblock-note" placeholder="פגישה, חופשה חלקית..."></div>
+          <p class="err" id="hourblock-err"></p>
+          <button class="bigbtn secondary" id="hourblock-btn">חסימת שעות</button>
         </div>
       </div>
 

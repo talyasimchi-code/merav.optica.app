@@ -281,12 +281,21 @@
     var weekDates = currentWeekDates();
     var from = dateToStr(weekDates[0]);
     var to = dateToStr(weekDates[weekDates.length - 1]);
-    api('GET', '/api/appointments?status=approved&from=' + from + '&to=' + to)
-      .then(function (res) { renderWeekly(weekDates, res.appointments || []); })
+    Promise.all([
+      api('GET', '/api/appointments?status=approved&from=' + from + '&to=' + to),
+      api('GET', '/api/blocked-dates')
+    ])
+      .then(function (results) {
+        var appts = results[0].appointments || [];
+        var blocked = (results[1].blockedDates || []).filter(function (b) {
+          return b.type === 'manual' && b.startTime && b.endTime;
+        });
+        renderWeekly(weekDates, appts, blocked);
+      })
       .catch(function () { grid.innerHTML = '<div class="wk-cell">שגיאה בטעינה</div>'; });
   }
 
-  function renderWeekly(weekDates, appts) {
+  function renderWeekly(weekDates, appts, blockedHours) {
     var grid = $('week-grid');
     var hours = buildWeekHours();
     var html = '<div class="wk-cell head"></div>';
@@ -305,12 +314,25 @@
           var o = overlapMinutes(cellStart, cellEnd, aS, aE);
           if (o > ov) { ov = o; appt = a; }
         });
+        var block = null, bov = 0;
+        blockedHours.forEach(function (b) {
+          if (b.date !== dateStr) return;
+          var bS = toMin(b.startTime), bE = toMin(b.endTime);
+          var o = overlapMinutes(cellStart, cellEnd, bS, bE);
+          if (o > bov) { bov = o; block = b; }
+        });
         if (appt && ov >= 30) {
           html += '<div class="wk-cell book-full">' + escapeHtml(appt.customerName) + '</div>';
         } else if (appt && ov > 0) {
           var aS = toMin(appt.startTime);
           var pos = aS <= cellStart ? 'top' : 'bottom';
           html += '<div class="wk-cell"><div class="half-fill ' + pos + '">' + escapeHtml(appt.customerName) + '</div></div>';
+        } else if (block && bov >= 30) {
+          html += '<div class="wk-cell block-full">חסום</div>';
+        } else if (block && bov > 0) {
+          var bS2 = toMin(block.startTime);
+          var pos2 = bS2 <= cellStart ? 'top' : 'bottom';
+          html += '<div class="wk-cell"><div class="half-fill-block ' + pos2 + '">חסום</div></div>';
         } else {
           html += '<div class="wk-cell"></div>';
         }
@@ -334,11 +356,11 @@
       .catch(function () { wrap.innerHTML = '<p style="font-size:12px;color:var(--danger)">שגיאה בטעינה</p>'; });
   }
 
-  var TYPE_LABEL = { holiday: 'חג', erev: 'ערב חג', manual: 'חסימה ידנית' };
+  var TYPE_LABEL = { holiday: 'חג', erev: 'ערב חג', manual: 'חסימה ידנית (יום שלם)' };
 
   function renderBlocked(list) {
     var wrap = $('blocked-list');
-    list = list.slice().sort(function (a, b) { return a.date.localeCompare(b.date); });
+    list = list.slice().sort(function (a, b) { return (a.date + (a.startTime || '')).localeCompare(b.date + (b.startTime || '')); });
     if (!list.length) {
       wrap.innerHTML = '<p style="font-size:12px;color:var(--text-muted)">אין חסימות מוגדרות. לחצי על "סנכרון חגים" כדי לטעון את החגים הקרובים.</p>';
       return;
@@ -347,11 +369,13 @@
       var delBtn = b.manual
         ? '<span class="delx" data-id="' + b.id + '" aria-label="בטל חסימה">&#10005;</span>'
         : '';
+      var isHourBlock = b.type === 'manual' && b.startTime && b.endTime;
+      var typeLabel = isHourBlock ? 'חסימת שעות ' + b.startTime + '–' + b.endTime : (TYPE_LABEL[b.type] || b.type);
       return '<div class="card" style="margin-bottom:8px">' +
         '<div style="display:flex;justify-content:space-between;align-items:center">' +
         '<span style="font-size:13px;font-weight:500">' + fmtDateHe(b.date) + '</span>' + delBtn +
         '</div>' +
-        '<div class="row"><span class="k">סוג</span><span class="v">' + (TYPE_LABEL[b.type] || b.type) + '</span></div>' +
+        '<div class="row"><span class="k">סוג</span><span class="v">' + typeLabel + '</span></div>' +
         (b.note ? '<div class="row"><span class="k">הערה</span><span class="v">' + escapeHtml(b.note) + '</span></div>' : '') +
         '</div>';
     }).join('');
@@ -387,6 +411,32 @@
       $('block-note').value = '';
       loadBlocked();
     });
+  });
+
+  $('hourblock-btn').addEventListener('click', function () {
+    var date = $('hourblock-date').value;
+    var start = $('hourblock-start').value;
+    var end = $('hourblock-end').value;
+    var note = $('hourblock-note').value;
+    var err = $('hourblock-err');
+    err.style.display = 'none';
+    if (!date || !start || !end) {
+      err.textContent = 'נא למלא תאריך, משעה ועד שעה';
+      err.style.display = 'block';
+      return;
+    }
+    api('POST', '/api/blocked-dates', { date: date, note: note, startTime: start, endTime: end })
+      .then(function () {
+        $('hourblock-date').value = '';
+        $('hourblock-start').value = '';
+        $('hourblock-end').value = '';
+        $('hourblock-note').value = '';
+        loadBlocked();
+      })
+      .catch(function (e) {
+        err.textContent = e.message || 'שגיאה בחסימת השעות';
+        err.style.display = 'block';
+      });
   });
 
   // ---------- Boot: are we already logged in? ----------

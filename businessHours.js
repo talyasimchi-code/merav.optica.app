@@ -60,22 +60,23 @@ function hoursForDate(dateStr) {
 }
 
 function isClosedDate(dateStr) {
-  const blocked = db.findBlockedDate(dateStr);
-  if (blocked && (blocked.type === 'holiday' || blocked.type === 'manual')) {
-    // Manual/holiday full closures block the whole day. Erev chag just
-    // shortens the day (handled via erevHoursForDate) rather than closing it.
-    return true;
-  }
-  return false;
+  return !!db.findFullDayBlock(dateStr);
 }
 
 function erevOverrideHours(dateStr) {
-  const blocked = db.findBlockedDate(dateStr);
-  if (blocked && blocked.type === 'erev') {
+  if (db.findErevBlock(dateStr)) {
     // Erev chag behaves like Friday: shortened hours ending at CLOSE_FRI.
     return { open: OPEN_FRI, close: CLOSE_FRI };
   }
   return null;
+}
+
+// Manual hour-range blocks the owner added for this date, as [start,end]
+// minute ranges — treated exactly like an existing appointment for the
+// purposes of blocking slots, so the same full/half-cell logic in the admin
+// weekly view "just works" for these too.
+function blockedRangesForDate(dateStr) {
+  return db.findHourBlocksForDate(dateStr).map(b => [toMinutes(b.startTime), toMinutes(b.endTime)]);
 }
 
 function overlaps(aStart, aEnd, bStart, bEnd) {
@@ -105,9 +106,10 @@ function nowInIsrael() {
 // date and visit duration, at the configured grid resolution, taking into
 // account:
 //  - the store's weekly hours (and Friday/erev shortened hours)
-//  - full closures (holiday, manual block, Saturday)
+//  - full closures (holiday, manual whole-day block, Saturday)
+//  - manual hour-range blocks the owner added for that date
 //  - existing pending/approved appointments that day
-//  - if the date is today, any slot that has already started
+//  - if the date is today, the minimum booking lead time
 function getAvailability(dateStr, durationMinutes) {
   const duration = durationMinutes || DEFAULT_DURATION;
   if (isClosedDate(dateStr)) return { closed: true, slots: [] };
@@ -120,10 +122,12 @@ function getAvailability(dateStr, durationMinutes) {
   const lastStart = closeMin - duration;
   if (lastStart < openMin) return { closed: true, slots: [] };
 
-  const active = db.activeAppointmentsForDate(dateStr).map(a => {
-    const start = toMinutes(a.startTime);
-    return [start, start + a.durationMinutes];
-  });
+  const active = db.activeAppointmentsForDate(dateStr)
+    .map(a => {
+      const start = toMinutes(a.startTime);
+      return [start, start + a.durationMinutes];
+    })
+    .concat(blockedRangesForDate(dateStr));
 
   const now = nowInIsrael();
   const isToday = dateStr === now.dateStr;
@@ -140,7 +144,7 @@ function getAvailability(dateStr, durationMinutes) {
 
 // Server-side re-check before actually creating an appointment, so two
 // people racing for the same slot can't both succeed, and so nobody can
-// book a time that has already started today.
+// book a time that has already started today or that the owner blocked.
 function isSlotStillFree(dateStr, startTime, durationMinutes) {
   const duration = durationMinutes || DEFAULT_DURATION;
   if (isClosedDate(dateStr)) return false;
@@ -155,10 +159,12 @@ function isSlotStillFree(dateStr, startTime, durationMinutes) {
   const now = nowInIsrael();
   if (dateStr === now.dateStr && start < now.minutes + BOOKING_LEAD_MINUTES) return false;
 
-  const active = db.activeAppointmentsForDate(dateStr).map(a => {
-    const s = toMinutes(a.startTime);
-    return [s, s + a.durationMinutes];
-  });
+  const active = db.activeAppointmentsForDate(dateStr)
+    .map(a => {
+      const s = toMinutes(a.startTime);
+      return [s, s + a.durationMinutes];
+    })
+    .concat(blockedRangesForDate(dateStr));
   return !active.some(([bS, bE]) => overlaps(start, end, bS, bE));
 }
 
